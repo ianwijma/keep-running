@@ -1,38 +1,42 @@
 const Yargs = require('yargs');
 const {spawn} = require("child_process");
 
-const SECONDS_IN_A_MINUTE = 60;
-const SECONDS_IN_A_HOUR = 60 * 60;
-
 const yargs = Yargs(process.argv.splice(2))
     .scriptName('kr')
-    .usage('kr [args] <thing-to-run>')
-    .option('rpm', {
+    .usage('kr [args] <process-to-run>')
+    .option('_rpm', {
         default: 0,
         description: 'The amount of Retries Per Minute, before we stop retrying',
         type: 'number'
     })
-    .option('rph', {
+    .option('_rph', {
         default: 0,
         description: 'The amount of Retries Per Hour, before we stop retrying',
         type: 'number'
     })
+    .option('_delay', {
+        default: 0,
+        description: 'Time in seconds we want to delay the restart with.',
+        type: 'number'
+    })
+    .conflicts('_rpm', '_rph')
     .help();
 
-const { _ = [], rpm, rph } = yargs.argv;
+const { _ = [], _rpm: rpm, _rph: rph, _delay: delay } = yargs.argv;
 const [command, ...args  ] = _;
 
 if (!command) {
     return yargs.showHelp();
 }
 
+const SECONDS_IN_A_MINUTE = 60;
+const SECONDS_IN_A_HOUR = 60 * 60;
+
 let historyMax = 4;
 let seconds = SECONDS_IN_A_MINUTE;
 let restartName = 'minute';
 
-if (rpm && rph) {
-    return console.error('Currently, can not define both --rpm and --rph, please choose only one.');
-} else if (rpm) {
+if (rpm) {
     historyMax = rpm
 } else if (rph) {
     historyMax = rph
@@ -40,16 +44,12 @@ if (rpm && rph) {
     restartName = 'hour'
 }
 
-/**
- * @type {Object<number, string>}
- */
+/** @type {Object<number, string>} */
 const history = {};
 
 const getNow = () => Math.ceil(Date.now() / 1000); // Time in seconds
 
-/**
- * @param {string} logs
- */
+/** @param {string} logs */
 const pushHistory = (logs) => history[getNow() + seconds] = logs;
 
 const updateHistory = () => {
@@ -62,8 +62,9 @@ const updateHistory = () => {
 
 const checkHistory = () => Object.keys(history).length <= historyMax;
 
+const restart = () => setTimeout(() => runCommand(delay), delay * 1000);
+
 const runCommand = () => {
-    console.log(`Running ${command} ${args.join(' ')}`);
     const runner = spawn(command, args);
 
     const commandLogs = [];
@@ -93,13 +94,13 @@ const runCommand = () => {
             updateHistory();
             if (checkHistory()) {
                 console.log('Restarting...');
-                runCommand();
+                restart();
             } else {
                 console.error(`The process crashed more then ${historyMax} times in the past ${restartName}, stop retrying.`);
-                console.error(`See below the past ${historyMax} crashes:`);
-                for (const time in history) {
-                    console.error(`Crash @ ${time - seconds}:\n${history[time]}`);
-                }
+                console.error(`See below the last crash log:`);
+                const keys = Object.keys(history);
+                const lastKey = keys[keys.length-1];
+                console.log(history[lastKey]);
             }
         }
     }
