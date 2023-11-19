@@ -45,20 +45,17 @@ if (rpm && rph) {
  */
 const history = {};
 
+const getNow = () => Math.ceil(Date.now() / 1000); // Time in seconds
+
 /**
  * @param {string} logs
  */
-const pushHistory = (logs) => history[(new Date).getTime()] = logs;
+const pushHistory = (logs) => history[getNow() + seconds] = logs;
 
 const updateHistory = () => {
-    const clearKeys = [];
-
-    const maxAge = (new Date).getTime() + seconds;
-    for (const historyTime in history) {
-        if (historyTime > maxAge) {
-            clearKeys.push(historyTime)
-        }
-    }
+    const now = getNow();
+    const clearKeys = Object.keys(history)
+        .filter((time) => time <= now);
 
     clearKeys.forEach((key) => delete history[key]);
 }
@@ -101,7 +98,7 @@ const runCommand = () => {
                 console.error(`The process crashed more then ${historyMax} times in the past ${restartName}, stop retrying.`);
                 console.error(`See below the past ${historyMax} crashes:`);
                 for (const time in history) {
-                    console.error(`Crash @ ${time}:\n${history[time]}`);
+                    console.error(`Crash @ ${time - seconds}:\n${history[time]}`);
                 }
             }
         }
@@ -113,5 +110,5 @@ const runCommand = () => {
     runner.stderr.on('data', (data) => handleOut('ERR', data.toString().trim()))
 }
 
-// Command goes BRRRR
+// Leggo!~
 runCommand();
