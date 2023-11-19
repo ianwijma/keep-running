@@ -87,8 +87,10 @@ const runCommand = () => {
     };
 
     const handleExit = (exitCode) => {
-        console.log(`[CRASH] exit code: ${exitCode}`)
-        if (exitCode !== 0) {
+        if (exitCode === 0) {
+            console.log(`Exit code: ${exitCode}`);
+        } else{
+            console.log(`[CRASH] exit code: ${exitCode}`)
             pushHistory(getLogs());
             clearLogs();
             updateHistory();
@@ -107,8 +109,8 @@ const runCommand = () => {
 
     runner.on('close', (exitCode) => handleExit(exitCode))
     runner.stdout.on('data', (data) => console.log(data.toString().trim()))
-    runner.stdout.on('data', (data) => handleOut('stdout', data.toString().trim()))
-    runner.stderr.on('data', (data) => handleOut('stderr', data.toString().trim()))
+    runner.stdout.on('data', (data) => handleOut('LOG', data.toString().trim()))
+    runner.stderr.on('data', (data) => handleOut('ERR', data.toString().trim()))
 }
 
 // Command goes BRRRR

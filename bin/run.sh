@@ -9,4 +9,10 @@ sleep $SLEEP;
 
 echo "Waking up!";
 
+if [ $EXIT > 0 ]; then
+  >&2 echo "Exiting with error code $EXIT";
+else
+  echo "Exiting with error code $EXIT";
+fi
+
 exit $EXIT;
