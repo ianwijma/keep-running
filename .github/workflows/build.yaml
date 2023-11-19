@@ -1,6 +1,6 @@
-name: Bonsai CI
+name: Keep Running
 run-name: ${{ gitea.actor }} is running spotify.local CI pipeline 🚀
-on: [release]
+on: [push]
 concurrency: 'true'
 
 jobs:
