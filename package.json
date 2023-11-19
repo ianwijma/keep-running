@@ -1,0 +1,27 @@
+{
+  "name": "kr",
+  "version": "1.0.0",
+  "description": "",
+  "bin": "src/index.js",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "pkg package.json"
+  },
+  "pkg": {
+    "scripts": "src/**/*.js",
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ],
+    "outputPath": "out"
+  },
+  "author": "Ian Wijma",
+  "dependencies": {
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.10",
+    "@types/yargs": "^17.0.29"
+  }
+}

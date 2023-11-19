@@ -1,0 +1,18 @@
+name: Bonsai CI
+run-name: ${{ gitea.actor }} is running spotify.local CI pipeline 🚀
+on: [release]
+concurrency: 'true'
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Download dependencies
+        run: npm ci
+      - name: Build binairy files
+        run: npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          path: bin
