@@ -7,12 +7,13 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - name: Download dependencies
-        run: npm ci
-      - name: Build binairy files
-        run: npm run build
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+      - uses: vimtor/action-zip@v1.1
+        with:
+          files: out/
+          desk: build.zip
       - uses: actions/upload-artifact@v3
         with:
-          path: out
+          path: build.zip
