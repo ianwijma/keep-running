@@ -20,7 +20,6 @@ const yargs = Yargs(process.argv.splice(2))
         description: 'Time in seconds we want to delay the restart with.',
         type: 'number'
     })
-    .conflicts('_rpm', '_rph')
 
 const { _ = [], _rpm: rpm, _rph: rph, _delay: delay } = yargs.argv;
 const [command, ...args  ] = _;
@@ -36,7 +35,9 @@ let historyMax = 4;
 let seconds = SECONDS_IN_A_MINUTE;
 let restartName = 'minute';
 
-if (rpm) {
+if (rpm && rph) {
+    return console.error('Currently, can not define both --rpm and --rph, please choose only one.');
+} else if (rpm) {
     historyMax = rpm
 } else if (rph) {
     historyMax = rph
@@ -64,8 +65,15 @@ const checkHistory = () => Object.keys(history).length <= historyMax;
 
 const restart = () => setTimeout(() => runCommand(delay), delay * 1000);
 
+const spawnCommand = () => {
+    const [ spawnCommand, ...cmdArgs ] = command.split(' ');
+    const spawnArgs = [...cmdArgs, ...args];
+
+    return spawn(spawnCommand, spawnArgs);
+}
+
 const runCommand = () => {
-    const runner = spawn(command, args);
+    const runner = spawnCommand();
 
     const commandLogs = [];
 
