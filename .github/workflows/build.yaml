@@ -17,7 +17,7 @@ jobs:
         uses: vimtor/action-zip@v1.1
         with:
           files: out/
-          desc: build.zip
+          dest: build.zip
       - name: Uploading archive
         uses: actions/upload-artifact@v3
         with:
