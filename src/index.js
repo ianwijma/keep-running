@@ -4,6 +4,7 @@ const {spawn} = require("child_process");
 const yargs = Yargs(process.argv.splice(2))
     .scriptName('kr')
     .usage('kr [args] <process-to-run>')
+    .help()
     .option('_rpm', {
         default: 0,
         description: 'The amount of Retries Per Minute, before we stop retrying',
@@ -20,7 +21,6 @@ const yargs = Yargs(process.argv.splice(2))
         type: 'number'
     })
     .conflicts('_rpm', '_rph')
-    .help();
 
 const { _ = [], _rpm: rpm, _rph: rph, _delay: delay } = yargs.argv;
 const [command, ...args  ] = _;
