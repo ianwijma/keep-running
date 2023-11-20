@@ -31,4 +31,3 @@ jobs:
         with:
           name: Binary
           path: ${{ steps.compile.outputs.BUILT_ARCHIVE }}
-
