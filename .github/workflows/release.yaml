@@ -1,10 +1,11 @@
-name: Keep Running
-run-name: ${{ gitea.actor }} is running the Keep Running build process 🚀
-on: [push]
-concurrency: 'true'
+name: Releasing
+run-name: ${{ gitea.actor }} is building a release releasing 🚀
+on:
+  release:
+    types: [created]
 
 jobs:
-  Build:
+  release:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
