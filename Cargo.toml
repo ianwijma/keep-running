@@ -7,3 +7,10 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.8", features = ["derive", "unicode", "wrap_help"] }
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+codegen-units = 1
+
