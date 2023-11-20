@@ -1,6 +1,8 @@
 name: Releasing
 run-name: ${{ github.actor }} is building a release releasing 🚀
-on: [release]
+on:
+  release:
+    types: [created]
 
 jobs:
   release:
