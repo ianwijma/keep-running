@@ -120,7 +120,7 @@ fn run_command(retry: &mut Retry) {
             println!("Restarting...");
             restart(retry);
         } else {
-            print!("The process has crashed more then {} times in the past {}, stop restarting", retry.max_retries, retry.restart_name);
+            print!("The process has crashed more then {} times in the past {}, stop restarting\n", retry.max_retries, retry.restart_name);
         }
     }
 }
