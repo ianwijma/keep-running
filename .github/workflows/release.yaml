@@ -1,5 +1,5 @@
 name: Releasing
-run-name: ${{ gitea.actor }} is building a release releasing 🚀
+run-name: ${{ github.actor }} is building a release releasing 🚀
 on: [release]
 
 jobs:
