@@ -1,6 +1,2 @@
-.idea/
-node_modules/
-out/
-
-# Random test file...
-0
+/target
+/.idea
