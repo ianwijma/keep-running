@@ -84,7 +84,7 @@ fn check_history(retry: &Retry) -> bool {
     return retry.history.len().lt(&usize::from(retry.max_retries))
 }
 
-fn spawn_process(retry: &Retry) -> std::io::Result<Child> {
+fn spawn_process(retry: &Retry) -> Result<Child, std::io::Error> {
     let mut command_parts: Vec<String> = retry
         .command
         .split_whitespace()
@@ -95,7 +95,10 @@ fn spawn_process(retry: &Retry) -> std::io::Result<Child> {
     command_parts.remove(0);
     command.args(command_parts);
 
-    return command.spawn();
+    match command.spawn() {
+        Ok(child) => Ok(child),
+        Err(err) => Err(err),
+    }
 }
 
 fn run_command(retry: &mut Retry) {
@@ -120,7 +123,7 @@ fn run_command(retry: &mut Retry) {
             println!("Restarting...");
             restart(retry);
         } else {
-            print!("The process has crashed more then {} times in the past {}, stop restarting\n", retry.max_retries, retry.restart_name);
+            println!("The process has crashed more than {} times in the past {}, stop restarting\n", retry.max_retries, retry.restart_name);
         }
     }
 }
