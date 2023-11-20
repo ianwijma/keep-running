@@ -1,8 +1,6 @@
 name: Releasing
 run-name: ${{ gitea.actor }} is building a release releasing 🚀
-on:
-  release:
-    types: [created]
+on: [release]
 
 jobs:
   release:
