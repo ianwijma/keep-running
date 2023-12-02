@@ -35,24 +35,29 @@ struct Retry {
 fn main() {
     let arguments = Arguments::parse();
 
-    let mut retry: Retry = Retry {
-        command: arguments.command,
-        history: Vec::new(),
-        max_retries: 4,
-        timespan: SECONDS_IN_A_MINUTE,
-        restart_delay: arguments.delay,
-        restart_name: "minute".to_string(),
-    };
+    let mut max_retries = 4;
+    let mut timespan = SECONDS_IN_A_MINUTE;
+    let mut restart_name = String::from("minute");
 
     if arguments.per_minute > 0 {
-        retry.max_retries = arguments.per_minute;
+        max_retries = arguments.per_minute;
     } else if arguments.per_hour > 0 {
-        retry.max_retries = arguments.per_hour;
-        retry.timespan = SECONDS_IN_A_HOUR;
-        retry.restart_name = "hour".to_string();
+        max_retries = arguments.per_hour;
+        timespan = SECONDS_IN_A_HOUR;
+        restart_name = String::from("hour");
     }
 
-    run_command(&mut retry)
+
+    let retry: Retry = Retry {
+        max_retries,
+        timespan,
+        restart_name,
+        command: arguments.command,
+        history: Vec::new(),
+        restart_delay: arguments.delay,
+    };
+
+    run_command(retry)
 }
 
 fn get_now() -> u64 {
@@ -62,26 +67,29 @@ fn get_now() -> u64 {
         .as_secs();
 }
 
-fn push_history(retry: &mut Retry) {
-    retry.history.push(get_now() + u64::from(retry.timespan));
+fn push_history(mut history: Vec<u64>, timespan: u16) -> Vec<u64> {
+    history.push(get_now() + u64::from(timespan));
+
+    return history.to_owned()
 }
 
-fn update_history(retry: &mut Retry) {
+fn update_history(mut history: Vec<u64>) -> Vec<u64> {
     let now = get_now();
-    let clear_times: Vec<u64> = retry
-        .history
+    let clear_times: Vec<u64> = history
         .iter()
         .filter(|&time| time <= &now)
         .map(|&time| time)
         .collect();
 
     for time in clear_times {
-        retry.history.retain(|&h| h != time);
+        history.retain(|&h| h != time);
     }
+
+    return history.to_owned();
 }
 
-fn check_history(retry: &Retry) -> bool {
-    return retry.history.len().lt(&usize::from(retry.max_retries))
+fn check_history(history: &Vec<u64>, max_retries: u8) -> bool {
+    return history.len().lt(&usize::from(max_retries))
 }
 
 fn spawn_process(retry: &Retry) -> Result<Child, std::io::Error> {
@@ -101,8 +109,8 @@ fn spawn_process(retry: &Retry) -> Result<Child, std::io::Error> {
     }
 }
 
-fn run_command(retry: &mut Retry) {
-    let mut process = spawn_process(retry)
+fn run_command(mut retry: Retry) {
+    let mut process = spawn_process(&retry)
         .expect("Process failed on startup");
 
     let exit_code = match process.wait() {
@@ -117,9 +125,10 @@ fn run_command(retry: &mut Retry) {
         println!("Exit code: {}", exit_code);
     } else {
         println!("[CRASH] exit code: {}", exit_code);
-        push_history(retry);
-        update_history(retry);
-        if check_history(retry) {
+        let pushed_history = push_history(retry.history, retry.timespan);
+        let updated_history = update_history(pushed_history);
+        if check_history(&updated_history, retry.max_retries) {
+            retry.history = updated_history;
             println!("Restarting...");
             restart(retry);
         } else {
@@ -128,7 +137,7 @@ fn run_command(retry: &mut Retry) {
     }
 }
 
-fn restart(retry: &mut Retry) {
+fn restart(retry: Retry) {
     sleep(Duration::from_secs(u64::from(retry.restart_delay)));
 
     run_command(retry);
