@@ -17,7 +17,7 @@ struct Arguments {
     delay: u8,
 
     #[arg()]
-    command: String
+    command: String,
 }
 
 const SECONDS_IN_A_MINUTE: u16 = 60;
@@ -29,7 +29,7 @@ struct Retry {
     max_retries: u8,
     timespan: u16,
     restart_delay: u8,
-    restart_name: String
+    restart_name: String,
 }
 
 fn main() {
@@ -39,22 +39,23 @@ fn main() {
     let mut timespan = SECONDS_IN_A_MINUTE;
     let mut restart_name = String::from("minute");
 
-    if arguments.per_minute > 0 {
-        max_retries = arguments.per_minute;
-    } else if arguments.per_hour > 0 {
-        max_retries = arguments.per_hour;
+    let Arguments { per_minute, per_hour, .. } = arguments;
+    if per_minute > 0 {
+        max_retries = per_minute;
+    } else if per_hour > 0 {
+        max_retries = per_hour;
         timespan = SECONDS_IN_A_HOUR;
         restart_name = String::from("hour");
     }
 
-
+    let Arguments { command, delay: restart_delay, .. } = arguments;
     let retry: Retry = Retry {
         max_retries,
         timespan,
         restart_name,
-        command: arguments.command,
+        command,
+        restart_delay,
         history: Vec::new(),
-        restart_delay: arguments.delay,
     };
 
     run_command(retry)
